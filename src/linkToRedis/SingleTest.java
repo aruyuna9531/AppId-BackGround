@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import exceptions.NotTCPException;
+import exceptions.WrongParameterException;
 import exceptions.invalidNumberException;
 import exceptions.redisConnectFailedException;
 import general.commonFunctions;
@@ -30,7 +31,6 @@ public class SingleTest {
 		File file = new File(fileName);
 		InputStream in = null;
 		try {
-			fetchAppIdentifyData a = new fetchAppIdentifyData(Listener.redisserver_host,Listener.redisserver_port,Listener.redisserver_pass);
 			in = new FileInputStream(file);
 			//头24字节
 			byte [] pcapHeader = new byte[24];
@@ -47,54 +47,25 @@ public class SingleTest {
 				EapolFrame f;
 				try {
 					f = new EapolFrame(frameTmp, framebytes);
-					//System.out.println("pack count="+packcounter+", type="+f.pickFlag());
-					//下一行是视频流量检测测试
-					if(f.videoFrameCharacter()) System.out.println("pack counter "+packcounter+": video stream detected.");
-					//移动应用识别测试
-					String dua = a.getFlowStatus(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), "dpiUserAgent");
-					
-					//System.out.println(dua);
-					
-					//server hello
-					if(f.serverhello()) {
-						//定位到Cert
-						int shlen = f.getEM()[3]*256+f.getEM()[4];
-						int ptr = shlen+5;
-						if(shlen+5<f.getEM().length)if(f.getEM()[ptr+5]==11) {
-							//certificate
-							try {
-								a.CAcertInit(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), (f.getEM()[ptr+3]*256+f.getEM()[ptr+4]));
-								a.writeCAcert(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), new String(f.getEM()).substring(ptr));
-								System.out.println("IP组："+f.getDstIP()+":"+f.getDstPort()+":"+ f.getSrcIP()+":"+f.getSrcPort()+"注册了CA证书");
-							} catch (invalidNumberException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-					}
-					if(!f.serverhello() && a.checkHashExist(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), "CertWriting") && f.getSrcPort()==443 && f.getEM()!=null) {
-						try {
-							a.writeCAcert(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), new String(f.getEM()));
-						} catch (invalidNumberException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
+					System.out.println("数据包编号="+packcounter+", 数据包类型="+f.pickFlag());
+					commonFunctions.mainFunc(f);
 				} catch (NotTCPException e) {
+				} catch (redisConnectFailedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 				if(readNums>=0 && packcounter>=readNums)break;
 				}
 		}
 		catch(IOException e) {
 			e.printStackTrace();
-		} catch (redisConnectFailedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
 		}
 	}
+	
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		readPackByBytes("/home/aruyuna/data/bilibili-2.pcap", -1);
+		readPackByBytes("/home/aruyuna/data/youku-demo1.pcap", -1);
 		//System.out.println(String.valueOf(-45135));
 	}
 

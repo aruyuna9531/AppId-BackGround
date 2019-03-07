@@ -65,14 +65,11 @@ public class SocketThread implements Runnable{
 	public void run() {
 		System.out.println("检测到新的连接");
 		try {
-			/**
-			 * 1.15更新：发包到云后台 Part 1
-			 */
-			f = new fetchAppIdentifyData("ras.sysu.edu.cn", 9037, "smartap");	//从redis获取活动节点
+			f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);	//从redis获取活动节点
 			String[] sp = f.getOneCloudServerAddress().split(":");	//随机获得的活动节点
-			sout = new Socket(sp[0], Integer.parseInt(sp[1]));	//与这个服务器建立连接
-			System.out.println("成功连接到云服务器："+sp[0]+":"+sp[1]+"，发包准备就绪");
-			DataOutputStream os = new DataOutputStream(sout.getOutputStream());
+			//sout = new Socket(sp[0], Integer.parseInt(sp[1]));	//与这个服务器建立连接
+			//System.out.println("成功连接到云服务器："+sp[0]+":"+sp[1]+"，发包准备就绪");
+			//DataOutputStream os = new DataOutputStream(sout.getOutputStream());
 			
 			//获取输入流
 			InputStream inputStream = sin.getInputStream();
@@ -120,8 +117,17 @@ public class SocketThread implements Runnable{
 				}
 
 				//打印包的信息（包括帧长度，MAC流向，IP流向，数据段内容。调试用。）
-				EapolFrame f = pack_analysis(pktStr, read_bytes);
-				
+				EapolFrame fr;
+				try {
+					fr = new EapolFrame(pktStr, read_bytes);
+					//System.out.println("数据包类型="+fr.pickFlag());
+					commonFunctions.mainFunc(fr);
+				} catch (NotTCPException e) {
+					
+				} catch (redisConnectFailedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

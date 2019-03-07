@@ -3,6 +3,7 @@ package linkToRedis;
 import java.util.HashMap;
 import java.util.Set;
 
+import exceptions.WrongParameterException;
 import exceptions.invalidNumberException;
 import exceptions.redisConnectFailedException;
 import general.commonFunctions;
@@ -15,22 +16,37 @@ public class fetchAppIdentifyData {
 	private String server_host = "ras.sysu.edu.cn";
 	private int server_port = 9037;
 	
-	public fetchAppIdentifyData() throws redisConnectFailedException {
+	public fetchAppIdentifyData(){
 		server_host="ras.sysu.edu.cn";
 		server_port=9037;
-		connectToRedis("ras.sysu.edu.cn", 9037, "smartap");
+		try {
+			connectToRedis("ras.sysu.edu.cn", 9037, "smartap");
+		} catch (redisConnectFailedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	public fetchAppIdentifyData(String _host, int _port) throws redisConnectFailedException{
+	public fetchAppIdentifyData(String _host, int _port){
 		server_host=_host;
 		server_port=_port;
-		connectToRedis(server_host, server_port, null);
+		try {
+			connectToRedis(server_host, server_port, null);
+		} catch (redisConnectFailedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	public fetchAppIdentifyData(String _host, int _port, String _password) throws redisConnectFailedException{
+	public fetchAppIdentifyData(String _host, int _port, String _password){
 		server_host=_host;
 		server_port=_port;
-		connectToRedis(server_host, server_port, _password);
+		try {
+			connectToRedis(server_host, server_port, _password);
+		} catch (redisConnectFailedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -351,7 +367,7 @@ public class fetchAppIdentifyData {
 	 * @throws invalidNumberException
 	 * @throws redisConnectFailedException
 	 */
-	public boolean writeCAcert(int sip, int sport, int dip, int dport, String caPart) throws invalidNumberException, redisConnectFailedException {
+	/*public boolean writeCAcert(int sip, int sport, int dip, int dport, String caPart) throws invalidNumberException, redisConnectFailedException {
 		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(!jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
@@ -369,6 +385,15 @@ public class fetchAppIdentifyData {
 			int written = commonFunctions.atoi(jedis.hget("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten"));
 			if(len-written>caPart.length()) {
 				if(written==0) {
+					if(dip==-1952451012 && dport==443 && sip==-1062725884 && sport==53632) {
+						System.out.println("即将写入数据库：\n");
+						try {
+							commonFunctions.printbytesformat(caPart);
+						} catch (WrongParameterException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 					writeFlowStatus(sip, sport, dip, dport, "CertMessage", caPart);
 					jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", caPart.length());
 					return true;
@@ -376,6 +401,15 @@ public class fetchAppIdentifyData {
 				else {
 					String ori = getFlowStatus(sip, sport, dip, dport, "CertMessage");
 					StringBuffer ob = new StringBuffer(ori);
+					if(dip==-1952451012 && dport==443 && sip==-1062725884 && sport==53632) {
+					System.out.println("即将写入数据库：\n");
+						try {
+							commonFunctions.printbytesformat(caPart);
+						} catch (WrongParameterException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 					ob.append(caPart);
 					writeFlowStatus(sip, sport, dip, dport, "CertMessage", ob.toString());
 					jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", caPart.length());
@@ -385,11 +419,91 @@ public class fetchAppIdentifyData {
 			else {
 				String ori = getFlowStatus(sip, sport, dip, dport, "CertMessage");
 				StringBuffer ob = new StringBuffer(ori);
+				if(dip==-1952451012 && dport==443 && sip==-1062725884 && sport==53632) {
+				System.out.println("即将写入数据库：\n");
+					try {
+						commonFunctions.printbytesformat(caPart.substring(0, len-written));
+					} catch (WrongParameterException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
 				ob.append(caPart.substring(0, len-written));
 				writeFlowStatus(sip, sport, dip, dport, "CertMessage", ob.toString());
 				jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", len-written);
 				jedis.hdel("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWriting");
-				CAcertification ca = new CAcertification(ob.toString());
+				//CAcertification ca = new CAcertification(ob.toString());
+				if(dip==-1952451012 && dport==443 && sip==-1062725884 && sport==53632) {
+					System.out.println("总CA：");
+					try {
+						commonFunctions.printbytesformat(ob);
+					} catch (WrongParameterException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				//ca.certificate_division();
+				return true;
+			}
+		}
+		else {
+			return false;
+		}
+	}
+	*/
+	public boolean writeCAcert(int sip, int sport, int dip, int dport, byte[] caPart) throws redisConnectFailedException, invalidNumberException {
+		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
+			if(!jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
+				int tmp=sip;
+				sip=dip;
+				dip=tmp;
+				tmp=sport;
+				sport=dport;
+				dport=tmp;
+			}
+			if(!jedis.hexists("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertLength") 
+					|| !jedis.hexists("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten") )
+				throw new invalidNumberException("CA证书长度不存在");
+			int len = commonFunctions.atoi(jedis.hget("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertLength"));
+			int written = commonFunctions.atoi(jedis.hget("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten"));
+			if(len-written>caPart.length) {
+				if(written==0) {
+					writeFlowStatus(sip, sport, dip, dport, "CertMessage", caPart);
+					jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", caPart.length);
+					return true;
+				}
+				else {
+					byte[] ori = jedis.hget(new String("flow:"+sip+":"+sport+":"+dip+":"+dport).getBytes(), "CertMessage".getBytes());
+					byte []waitwrite = new byte[ori.length+caPart.length];
+					for(int i=0;i<ori.length;i++)waitwrite[i]=ori[i];
+					for(int i=0;i<caPart.length;i++)waitwrite[i+ori.length]=caPart[i];
+					
+					writeFlowStatus(sip, sport, dip, dport, "CertMessage", waitwrite);
+					jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", caPart.length);
+					return true;
+				}
+			}
+			else {
+				byte[] ori = jedis.hget(new String("flow:"+sip+":"+sport+":"+dip+":"+dport).getBytes(), "CertMessage".getBytes());
+				byte []waitwrite = new byte[ori.length+len-written];
+				for(int i=0;i<ori.length;i++)waitwrite[i]=ori[i];
+				for(int i=0;i<len-written;i++)waitwrite[i+ori.length]=caPart[i];
+				
+				writeFlowStatus(sip, sport, dip, dport, "CertMessage", waitwrite);
+				jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", len-written);
+				jedis.hdel("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWriting");
+				//CAcertification ca = new CAcertification(ob.toString());
+				/*if(dip==-1952451012 && dport==443 && sip==-1062725884 && sport==53632) {
+					System.out.println("总CA：");
+					try {
+						commonFunctions.printbytesformat(jedis.hget(new String("flow:"+sip+":"+sport+":"+dip+":"+dport).getBytes(), "CertMessage".getBytes()));
+					} catch (WrongParameterException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}*/
+				CAcertification ca = new CAcertification(jedis.hget(new String("flow:"+sip+":"+sport+":"+dip+":"+dport).getBytes(), "CertMessage".getBytes()));
 				ca.certificate_division();
 				return true;
 			}
@@ -398,4 +512,27 @@ public class fetchAppIdentifyData {
 			return false;
 		}
 	}
+
+	public boolean writeFlowStatus(int sip, int sport, int dip, int dport, String field, byte[] value) throws redisConnectFailedException {
+		// TODO Auto-generated method stub
+		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+		
+		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
+			if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
+				jedis.hset(new String("flow:"+sip+":"+sport+":"+dip+":"+dport).getBytes(), field.getBytes(), value);
+				jedis.expire("flow:"+sip+":"+sport+":"+dip+":"+dport, expire);
+				
+			}
+			else {
+				jedis.hset(new String("flow:"+dip+":"+dport+":"+sip+":"+sport).getBytes(), field.getBytes(), value);
+				jedis.expire("flow:"+dip+":"+dport+":"+sip+":"+sport, expire);
+			}
+		}
+		else {
+			jedis.hset(new String("flow:"+sip+":"+sport+":"+dip+":"+dport).getBytes(), field.getBytes(), value);
+			jedis.expire("flow:"+dip+":"+dport+":"+sip+":"+sport, expire);
+		}
+		return true;
+	}
+	
 }

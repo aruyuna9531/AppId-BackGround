@@ -287,7 +287,6 @@ public class EapolFrame {
 			e.printStackTrace();
 			return false;
 		}
-		
 	}
 	
 	/**
@@ -324,7 +323,10 @@ public class EapolFrame {
 				try {
 					fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
 					String getstr = f.getApplyMessage(srcIP, srcPort, dstIP, dstPort);
-					if(getstr.substring(0, 3).compareTo("GET")==0) {
+					if(getstr==null) {
+						return false;
+					}
+					else if(getstr.substring(0, 3).compareTo("GET")==0) {
 						//是一个get请求，提取资源字段（文件名）
 						String []url = getstr.split(" ");
 						//资源主体以问号结束，或者没有问号，则一整串都是主体

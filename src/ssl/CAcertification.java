@@ -13,8 +13,8 @@ public class CAcertification {
 	private int CertificateBytesFilled = 0;
 	private byte [] certificate;
 	private int insertPointer = 0;
-	public CAcertification(String s) {
-		certificate = s.getBytes();
+	public CAcertification(byte[] s) {
+		certificate = s;
 	}
 	/**
 	 * 往本流提供server hello段的一长串数据
@@ -74,47 +74,42 @@ public class CAcertification {
 	public void certificate_division() {
 		//找一下a0 03 02 01 02 02，CA证书标志点
 		String castr = new String(certificate);
-		try {
-			commonFunctions.printbytesformat(certificate);
-		} catch (WrongParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		int start=0;
-		for(int i=15;i<30;i++) {
-			if(certificate[i]==0xa0
-					&& certificate[i+1]==03
-					&& certificate[i+2]==02
-					&& certificate[i+3]==01
-					&& certificate[i+4]==02
-					&& certificate[i+5]==02
+		for(int i=10;i<25;i++) {
+			if(certificate[i]==-96
+					&& certificate[i+1]==0x03
+					&& certificate[i+2]==0x02
+					&& certificate[i+3]==0x01
+					&& certificate[i+4]==0x02
+					&& certificate[i+5]==0x02
 					) {
 				start = i+6;
 				break;
 			}
 		}
 		//serial number
-		start += certificate[start]+1;
+		start += commonFunctions.byteConvert(certificate[start])+1;
 		//signature
-		start += certificate[start+1]+2;
+		start += commonFunctions.byteConvert(certificate[start+1])+2;
 		//issuer
-		start += certificate[start+1]+2;
+		start += commonFunctions.byteConvert(certificate[start+1])+2;
 		//validity
+		
 		start += 32;
 		//2B subject length（30 xx）
-		start += 2;
-		int subjectLength = certificate[start-1];
+		int subjectLength = commonFunctions.byteConvert(certificate[start+1]);
 		int filled = 0;
+		start += 2;
 		//子项（31 xx）
 		while(filled<subjectLength) {
-			int sslen = certificate[start+filled+1];
-			if(certificate[start+filled+8]==10) {
+			int sslen = commonFunctions.byteConvert(certificate[start+filled+1]);
+			if(commonFunctions.byteConvert(certificate[start+filled+8])==10) {
 				//organizationName
-				System.out.println("CA证书持有单位："+castr.substring(start+filled+8+3, start+filled+8+3+certificate[start+filled+10]));
+				System.out.println("CA证书持有单位："+new String(commonFunctions.pickbytes(certificate, start+filled+8+3, start+filled+8+3+commonFunctions.byteConvert(certificate[start+filled+10]))));
 			}
-			else if(certificate[start+filled+8]==3) {
+			else if(commonFunctions.byteConvert(certificate[start+filled+8])==3) {
 				//commonName
-				System.out.println("CA证书域名："+castr.substring(start+filled+8+3, start+filled+8+3+certificate[start+filled+10]));
+				System.out.println("CA证书域名："+new String(commonFunctions.pickbytes(certificate, start+filled+8+3, start+filled+8+3+commonFunctions.byteConvert(certificate[start+filled+10]))));
 			}
 			filled += 2+sslen;
 		}
