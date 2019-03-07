@@ -12,11 +12,6 @@ public class JedisPoolClient
 		if(pool == null)
 		{
 			JedisPoolConfig config = new JedisPoolConfig();
-			config.setMaxTotal(50);
-			config.setMaxIdle(5); 
-			config.setMaxWaitMillis(1000*100);
-			config.setTestOnBorrow(true);
-			config.setTestOnReturn(true); 
 			pool = new JedisPool(config, "127.0.0.1", 6379, 2000, "619868");
 		}
 	}
