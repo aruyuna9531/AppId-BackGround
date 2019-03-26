@@ -12,7 +12,8 @@ import parseFrames.EapolFrame;
 import recvFrames.Listener;
 
 public class commonFunctions {
-	private static fetchAppIdentifyData a= new fetchAppIdentifyData(Listener.redisserver_host,Listener.redisserver_port,Listener.redisserver_pass);;
+	private static long packCount = 0;
+	private static fetchAppIdentifyData a= new fetchAppIdentifyData();
 	public static int byteConvert(byte b) {
 		return b>=0?b:(256+b);
 	}
@@ -123,10 +124,11 @@ public class commonFunctions {
 	 */
 	public static void mainFunc(EapolFrame f) throws redisConnectFailedException {
 		//下一行是视频流量检测测试
+		++packCount;
 		if(f.videoFrameCharacter()) System.out.println("检测到视频流量：");
 		//移动应用识别测试（这里从redis缓存里拿数据）
 		String dua = a.getFlowStatus(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), "dpiUserAgent");
-		if(dua!=null)System.out.println("当前流量指向的终端信息："+dua);
+		if(dua!=null)System.out.println("数据包编号"+packCount+"，当前流量指向的终端信息："+dua);
 		
 		//server hello
 		int ptr = 0;

@@ -15,40 +15,40 @@ public class fetchAppIdentifyData {
 	private Jedis jedis = null;
 	private String server_host = "ras.sysu.edu.cn";
 	private int server_port = 9037;
-	
-	public fetchAppIdentifyData(){
-		server_host="ras.sysu.edu.cn";
-		server_port=9037;
-		try {
-			connectToRedis("ras.sysu.edu.cn", 9037, "smartap");
-		} catch (redisConnectFailedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public fetchAppIdentifyData(String _host, int _port){
-		server_host=_host;
-		server_port=_port;
-		try {
-			connectToRedis(server_host, server_port, null);
-		} catch (redisConnectFailedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public fetchAppIdentifyData(String _host, int _port, String _password){
-		server_host=_host;
-		server_port=_port;
-		try {
-			connectToRedis(server_host, server_port, _password);
-		} catch (redisConnectFailedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
+//	
+//	public fetchAppIdentifyData(){
+//		server_host="ras.sysu.edu.cn";
+//		server_port=9037;
+//		try {
+//			connectToRedis("ras.sysu.edu.cn", 9037, "smartap");
+//		} catch (redisConnectFailedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+//
+//	public fetchAppIdentifyData(String _host, int _port){
+//		server_host=_host;
+//		server_port=_port;
+//		try {
+//			connectToRedis(server_host, server_port, null);
+//		} catch (redisConnectFailedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+//	
+//	public fetchAppIdentifyData(String _host, int _port, String _password){
+//		server_host=_host;
+//		server_port=_port;
+//		try {
+//			connectToRedis(server_host, server_port, _password);
+//		} catch (redisConnectFailedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+//	
 	/**
 	 * 连接到云redis（私有方法，在构造函数使用）
 	 * @param server_host 云redis的域名/IP
@@ -56,46 +56,37 @@ public class fetchAppIdentifyData {
 	 * @param auth_password 需要认证时提供的的密码（没有则为null）
 	 * @throws redisConnectFailedException 连接失败抛出异常
 	 */
-	private void connectToRedis(String server_host, int server_port, String auth_password) throws redisConnectFailedException {
-		/**
-		 * 连接到redis
-		 */
-		jedis = new Jedis(server_host, server_port);
-		/**
-		 * 如果redis使用了密码验证，那么需要调用auth()进行验证。
-		 * 没有进行验证会抛出NOAUTH Authentication required异常
-		 * 密码错误会抛出ERR invalid password异常
-		 */
-		try {
-			if(auth_password!=null)jedis.auth(auth_password);
-			/**
-			 * ping()方法即redis中输入ping命令。
-			 * 如果连接正常，返回PONG
-			 * 该端口没有redis服务运行，抛出Connection refused异常
-			 */
-			jedis.ping();
-		}catch(Exception e) {
-			System.err.println("连接到redis失败，从云抓取识别结果功能将不可用。可能的原因有以下1种或多种：\n"
-					+ "1.云redis服务未开启，需要启动\n"
-					+ "2.云redis相关初始化参数有误，需要检查");
-			if(auth_password==null)
-				System.err.println("3.云redis可能需要密码验证，您只提供了redis的IP（域名）和端口，请加入第3个参数作为密码。不知道密码的请咨询管理员");
-			else System.err.println("3.密码参数错误，需要修改，如果不需要密码验证，请删除第3个参数。不知道密码的请咨询管理员");
-			System.err.println("4.云redis设置了保护模式且没有密码验证，这是只能从云内部访问的Bug，仍然要咨询管理员");
-			if(jedis!=null)jedis.close();
-			throw new redisConnectFailedException(server_host+":"+server_port);
-		}finally {
-			
-		}
-	}
+//	private void connectToRedis() throws redisConnectFailedException {
+//		/**
+//		 * 连接到redis
+//		 */
+//		jedis = JedisPoolClient.getJedis();
+//		/**
+//		 * 如果redis使用了密码验证，那么需要调用auth()进行验证。
+//		 * 没有进行验证会抛出NOAUTH Authentication required异常
+//		 * 密码错误会抛出ERR invalid password异常
+//		 */
+//		try {
+//			jedis.ping();
+//		}catch(Exception e) {
+//			System.err.println("连接到redis失败，从云抓取识别结果功能将不可用。可能的原因有以下1种或多种：\n"
+//					+ "1.redis服务未开启，需要启动\n"
+//					+ "2.redis相关初始化参数有误，需要检查");
+//			System.err.println("3.密码错误，需要修改，如果不需要密码验证，请删除第3个参数。不知道密码的请咨询管理员");
+//			System.err.println("4.redis设置了保护模式且没有密码验证，这是只能从云内部访问的Bug，仍然要咨询管理员");
+//			if(jedis!=null){JedisPoolClient.returnResource(jedis);jedis=null;}
+//			throw new redisConnectFailedException(server_host+":"+server_port);
+//		}finally {
+//			
+//		}
+//	}
 	
 	/**
 	 * 连接到应用识别云后台获取数据
 	 * @return 包含Mac：App的Map
-	 * @throws redisConnectFailedException redis连接失败
 	 */
-	public HashMap<String, String> getResultFromCloud() throws redisConnectFailedException {
-		if(jedis==null)throw new redisConnectFailedException(server_host+":"+server_port);
+	public HashMap<String, String> getResultFromCloud() {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		HashMap<String, String> AppIdContainers = new HashMap<String, String>();
 		/**
 		 * 尝试读写redis。keys()代表keys命令（取得拥有特定模式的键，*号代表任意字符串）
@@ -114,17 +105,20 @@ public class fetchAppIdentifyData {
 		/**
 		 * 关闭redis连接
 		 */
-		jedis.close();	
+		if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 		return AppIdContainers;
 	}
 	/**
 	 * 从redis服务器中随机返回一个可用的云端接收节点地址
 	 * @return 随机抽到的地址
-	 * @throws redisConnectFailedException 链接redis失败
 	 */
-	public String getOneCloudServerAddress() throws redisConnectFailedException {
-		if(jedis==null)throw new redisConnectFailedException(server_host+":"+server_port);
-		return jedis.srandmember("cloudServerList");		//获取活动服务器列表
+	public String getOneCloudServerAddress() {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
+		String ret = jedis.srandmember("cloudServerList");		//获取活动服务器列表
+		if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+		return ret;
 	}
 	
 	//
@@ -139,8 +133,8 @@ public class fetchAppIdentifyData {
 	 * @return 没有异常返回true
 	 * @throws redisConnectFailedException redis链接失败
 	 */
-	public boolean writeFlowStatus(int sip, int sport, int dip, int dport, String field, String value) throws redisConnectFailedException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+	public boolean writeFlowStatus(int sip, int sport, int dip, int dport, String field, String value) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
@@ -157,6 +151,8 @@ public class fetchAppIdentifyData {
 			jedis.hset("flow:"+sip+":"+sport+":"+dip+":"+dport, field, value);
 			jedis.expire("flow:"+dip+":"+dport+":"+sip+":"+sport, expire);
 		}
+		if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 		return true;
 	}
 	/**
@@ -169,7 +165,7 @@ public class fetchAppIdentifyData {
 	 * @return
 	 * @throws redisConnectFailedException
 	 */
-	public boolean writeApplyMessage(int sip, int sport, int dip, int dport, String message) throws redisConnectFailedException {
+	public boolean writeApplyMessage(int sip, int sport, int dip, int dport, String message){
 		return writeFlowStatus(sip, sport, dip, dport, "applyMessage", message);
 	}
 	/**
@@ -181,7 +177,7 @@ public class fetchAppIdentifyData {
 	 * @return get请求内容
 	 * @throws redisConnectFailedException
 	 */
-	public String getApplyMessage(int sip, int sport, int dip, int dport) throws redisConnectFailedException {
+	public String getApplyMessage(int sip, int sport, int dip, int dport) {
 		return getFlowStatus(sip, sport, dip, dport, "applyMessage");
 	}
 	/**
@@ -190,29 +186,46 @@ public class fetchAppIdentifyData {
 	 * @return
 	 * @throws redisConnectFailedException
 	 */
-	public boolean videoTypeVerify(String typename) throws redisConnectFailedException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
-		return jedis.sismember("videoTypeList", typename);
+	public boolean videoTypeVerify(String typename){
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
+		boolean res = jedis.sismember("videoTypeList", typename);
+		if(jedis!=null){
+				JedisPoolClient.returnResource(jedis);jedis=null;
+		}
+		return res;
 	}
 	
-	public String getIdByHost(String host) throws redisConnectFailedException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
-		return jedis.get("Host:"+host);
+	public String getIdByHost(String host){
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
+		String res =  jedis.get("Host:"+host);
+		if(jedis!=null){
+			JedisPoolClient.returnResource(jedis);jedis=null;
+		}
+		return res;
 	}
 	
-	public String getFlowStatus(int sip, int sport, int dip, int dport, String field) throws redisConnectFailedException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+	public String getFlowStatus(int sip, int sport, int dip, int dport, String field) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
 				jedis.expire("flow:"+sip+":"+sport+":"+dip+":"+dport, expire);
-				return jedis.hget("flow:"+sip+":"+sport+":"+dip+":"+dport, field);
+				String res = jedis.hget("flow:"+sip+":"+sport+":"+dip+":"+dport, field);
+				if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+				return res;
+				
 			}
 			else {
 				jedis.expire("flow:"+dip+":"+dport+":"+sip+":"+sport, expire);
-				return jedis.hget("flow:"+dip+":"+dport+":"+sip+":"+sport, field);
+				String res = jedis.hget("flow:"+dip+":"+dport+":"+sip+":"+sport, field);
+				if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+				return res;
 			}
 		}
 		else {
+			if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 			return null;
 		}
 	}
@@ -225,8 +238,8 @@ public class fetchAppIdentifyData {
 	 * @return
 	 * @throws redisConnectFailedException 
 	 */
-	public boolean finalSequenceSet(int sip, int sport, int dip, int dport, int seq, int ack) throws redisConnectFailedException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+	public boolean finalSequenceSet(int sip, int sport, int dip, int dport, int seq, int ack) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(!jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
 				int tmp=sip;
@@ -239,9 +252,13 @@ public class fetchAppIdentifyData {
 			jedis.hset("flow:"+sip+":"+sport+":"+dip+":"+dport, "finalSeq", String.valueOf(seq));
 			jedis.hset("flow:"+sip+":"+sport+":"+dip+":"+dport, "finalAck", String.valueOf(ack));
 			jedis.expire("flow:"+sip+":"+sport+":"+dip+":"+dport, expire);
+			if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 			return true;
 		}
 		else {
+			if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 			return false;
 		}
 	}
@@ -257,38 +274,68 @@ public class fetchAppIdentifyData {
 	 * @throws invalidNumberException 
 	 */
 	public boolean finalHandshakeCompleteCheck(int sip, int sport, int dip, int dport, int seq, int ack) throws redisConnectFailedException, invalidNumberException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
 				int fseq = 0, fack = 0;
 				if(jedis.hexists("flow:"+sip+":"+sport+":"+dip+":"+dport, "finalSeq"))
 					fseq = commonFunctions.atoi(jedis.hget("flow:"+sip+":"+sport+":"+dip+":"+dport, "finalSeq"));
-				else return false;
+				else{
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return false;
+				}
 				if(jedis.hexists("flow:"+sip+":"+sport+":"+dip+":"+dport, "finalAck"))
 					fack = commonFunctions.atoi(jedis.hget("flow:"+sip+":"+sport+":"+dip+":"+dport, "finalAck"));
-				else return false;
+				else {
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return false;
+				}
 				if(seq == fseq + 1 && ack == fack + 1) {
 					jedis.del("flow:"+sip+":"+sport+":"+dip+":"+dport);
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 					return true;
 				}
-				else return false;
+				else {
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return false;
+				}
 			}
 			else {
 				int fseq = 0, fack = 0;
 				if(jedis.hexists("flow:"+dip+":"+dport+":"+sip+":"+sport, "finalSeq"))
 					fseq = commonFunctions.atoi(jedis.hget("flow:"+dip+":"+dport+":"+sip+":"+sport, "finalSeq"));
-				else return false;
+				else{
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return false;
+				}
 				if(jedis.hexists("flow:"+dip+":"+dport+":"+sip+":"+sport, "finalAck"))
 					fack = commonFunctions.atoi(jedis.hget("flow:"+dip+":"+dport+":"+sip+":"+sport, "finalAck"));
-				else return false;
+				else{
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return false;
+				}
 				if(seq == fseq + 1 && ack == fack + 1) {
 					jedis.del("flow:"+dip+":"+dport+":"+sip+":"+sport);
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 					return true;
 				}
-				else return false;
+				else {
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return false;
+				}
 			}
 		}
 		else {
+			if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 			return false;
 		}
 	}
@@ -302,18 +349,36 @@ public class fetchAppIdentifyData {
 	 * @throws redisConnectFailedException
 	 */
 	public boolean deleteFlow(int sip, int sport, int dip, int dport) throws redisConnectFailedException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
-				if(jedis.del("flow:"+sip+":"+sport+":"+dip+":"+dport)==1)return true;
-				else return false;
+				if(jedis.del("flow:"+sip+":"+sport+":"+dip+":"+dport)==1) {
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return true;
+				}
+				else{
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return false;
+				}
 			}
 			else {
-				if(jedis.del("flow:"+dip+":"+dport+":"+sip+":"+sport)==1)return true;
-				else return false;
+				if(jedis.del("flow:"+dip+":"+dport+":"+sip+":"+sport)==1) {
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return true;
+				}
+				else{
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+					return false;
+				}
 			}
 		}
 		else {
+			if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 			return false;
 		}
 	}
@@ -326,17 +391,25 @@ public class fetchAppIdentifyData {
 	 * @return
 	 * @throws redisConnectFailedException 
 	 */
-	public boolean checkHashExist(int sip, int sport, int dip, int dport, String field) throws redisConnectFailedException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+	public boolean checkHashExist(int sip, int sport, int dip, int dport, String field) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
-				return jedis.hexists("flow:"+sip+":"+sport+":"+dip+":"+dport, field);
+				boolean res = jedis.hexists("flow:"+sip+":"+sport+":"+dip+":"+dport, field);
+				if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+				return res;
 			}
 			else {
-				return jedis.hexists("flow:"+dip+":"+dport+":"+sip+":"+sport, field);
+				boolean res = jedis.hexists("flow:"+dip+":"+dport+":"+sip+":"+sport, field);
+				if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
+				return res;
 			}
 		}
 		else {
+			if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 			return false;
 		}
 	}
@@ -368,7 +441,7 @@ public class fetchAppIdentifyData {
 	 * @throws redisConnectFailedException
 	 */
 	/*public boolean writeCAcert(int sip, int sport, int dip, int dport, String caPart) throws invalidNumberException, redisConnectFailedException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(!jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
 				int tmp=sip;
@@ -451,8 +524,8 @@ public class fetchAppIdentifyData {
 		}
 	}
 	*/
-	public boolean writeCAcert(int sip, int sport, int dip, int dport, byte[] caPart) throws redisConnectFailedException, invalidNumberException {
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+	public boolean writeCAcert(int sip, int sport, int dip, int dport, byte[] caPart) throws invalidNumberException {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(!jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
 				int tmp=sip;
@@ -470,7 +543,14 @@ public class fetchAppIdentifyData {
 			if(len-written>caPart.length) {
 				if(written==0) {
 					writeFlowStatus(sip, sport, dip, dport, "CertMessage", caPart);
+					//上面这个函数有jedis归还链接的操作，导致jedis=null，需要重新从连接池借一个jedis连接
+					if(jedis==null)jedis = JedisPoolClient.getJedis();
+					if(jedis!=null)System.out.println("test-pt4");
 					jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", caPart.length);
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);
+						jedis=null;
+					}
 					return true;
 				}
 				else {
@@ -480,7 +560,12 @@ public class fetchAppIdentifyData {
 					for(int i=0;i<caPart.length;i++)waitwrite[i+ori.length]=caPart[i];
 					
 					writeFlowStatus(sip, sport, dip, dport, "CertMessage", waitwrite);
+					if(jedis==null)jedis = JedisPoolClient.getJedis();
 					jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", caPart.length);
+					if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);
+						jedis=null;
+					}
 					return true;
 				}
 			}
@@ -491,6 +576,8 @@ public class fetchAppIdentifyData {
 				for(int i=0;i<len-written;i++)waitwrite[i+ori.length]=caPart[i];
 				
 				writeFlowStatus(sip, sport, dip, dport, "CertMessage", waitwrite);
+				if(jedis==null)jedis = JedisPoolClient.getJedis();
+				
 				jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", len-written);
 				jedis.hdel("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWriting");
 				//CAcertification ca = new CAcertification(ob.toString());
@@ -505,17 +592,30 @@ public class fetchAppIdentifyData {
 				}*/
 				CAcertification ca = new CAcertification(jedis.hget(new String("flow:"+sip+":"+sport+":"+dip+":"+dport).getBytes(), "CertMessage".getBytes()));
 				ca.certificate_division();
+				if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 				return true;
 			}
 		}
 		else {
+			if(jedis!=null){
+						JedisPoolClient.returnResource(jedis);jedis=null;}
 			return false;
 		}
 	}
-
-	public boolean writeFlowStatus(int sip, int sport, int dip, int dport, String field, byte[] value) throws redisConnectFailedException {
+	/**
+	 * 写流参数函数（通用）
+	 * @param sip 源ip
+	 * @param sport 源端口
+	 * @param dip 目的ip
+	 * @param dport 目的端口
+	 * @param field 哈希key
+	 * @param value 值
+	 * @return
+	 */
+	public boolean writeFlowStatus(int sip, int sport, int dip, int dport, String field, byte[] value) {
 		// TODO Auto-generated method stub
-		if(jedis==null) throw new redisConnectFailedException(server_host+":"+server_port);
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
 		
 		if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport) || jedis.exists("flow:"+dip+":"+dport+":"+sip+":"+sport)) {
 			if(jedis.exists("flow:"+sip+":"+sport+":"+dip+":"+dport)) {
@@ -531,6 +631,10 @@ public class fetchAppIdentifyData {
 		else {
 			jedis.hset(new String("flow:"+sip+":"+sport+":"+dip+":"+dport).getBytes(), field.getBytes(), value);
 			jedis.expire("flow:"+dip+":"+dport+":"+sip+":"+sport, expire);
+		}
+		if(jedis!=null){
+			JedisPoolClient.returnResource(jedis);
+			jedis=null;
 		}
 		return true;
 	}

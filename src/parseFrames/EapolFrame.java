@@ -82,15 +82,11 @@ public class EapolFrame {
 		else eapolMessage=null;
 		
 		if(SYN) {
-			try {
-				fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+				fetchAppIdentifyData f = new fetchAppIdentifyData();
 				//记录基础seq，ack用于跟踪数据流
 				if(!ACK)f.writeFlowStatus(srcIP, srcPort, dstIP, dstPort, "basicClientSeq", String.valueOf(seqNum));
 				else f.writeFlowStatus(srcIP, srcPort, dstIP, dstPort, "basicServerSeq", String.valueOf(seqNum));
-			} catch (redisConnectFailedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			
 		}
 		
 		autoSaveGet();
@@ -146,14 +142,8 @@ public class EapolFrame {
 	private void autoSaveGet() {
 		if(eapolMessage==null || eapolMessage.length<3)return;
 		if(eapolMessage[0]=='G' && eapolMessage[1]=='E' && eapolMessage[2]=='T') {
-			try {
-				fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+				fetchAppIdentifyData f = new fetchAppIdentifyData();
 				f.writeApplyMessage(srcIP, srcPort, dstIP, dstPort, new String(eapolMessage));
-			} catch (redisConnectFailedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
 		}
 	}
 	/**
@@ -201,7 +191,7 @@ public class EapolFrame {
 		if(RST) {
 			fetchAppIdentifyData f;
 			try {
-				f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+				f = new fetchAppIdentifyData();
 				f.deleteFlow(srcIP, srcPort, dstIP, dstPort);
 			} catch (redisConnectFailedException e) {
 				// TODO Auto-generated catch block
@@ -210,8 +200,7 @@ public class EapolFrame {
 			return "reset";
 		}
 		if(FIN) {
-			try {
-				fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+				fetchAppIdentifyData f = new fetchAppIdentifyData();
 				if(!f.checkHashExist(srcIP, srcPort, dstIP, dstPort, "finalSeq")) {
 					f.finalSequenceSet(srcIP, srcPort, dstIP, dstPort, seqNum, ackNum);
 					return "finalHandshake1";
@@ -219,14 +208,10 @@ public class EapolFrame {
 				else {
 					return "finalHandshake3";
 				}
-			} catch (redisConnectFailedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		if(ACK) {
 			try {
-				fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+				fetchAppIdentifyData f = new fetchAppIdentifyData();
 				int bseq = commonFunctions.atoi(f.getFlowStatus(srcIP, srcPort, dstIP, dstPort, "basicClientSeq"));
 				int back = commonFunctions.atoi(f.getFlowStatus(srcIP, srcPort, dstIP, dstPort, "basicServerSeq"));
 				if(seqNum-bseq==1 && ackNum-back==1) {
@@ -278,15 +263,9 @@ public class EapolFrame {
 	 * @return 成功写入返回yes，否则no
 	 */
 	private boolean videoStreamVerified() {
-		try {
-			fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+			fetchAppIdentifyData f = new fetchAppIdentifyData();
 			f.writeFlowStatus(srcIP, srcPort, dstIP, dstPort, "isVideoStream", "yes");
 			return true;
-		} catch (redisConnectFailedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
 	}
 	
 	/**
@@ -320,8 +299,7 @@ public class EapolFrame {
 			//不是video，查找octet-stream
 			if(emsg.substring(ptrpos, ptrpos+"application/octet-stream".length()).compareTo("application/octet-stream")==0) {
 				//是octet-stream，需要返回客户端的GET请求分析
-				try {
-					fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+					fetchAppIdentifyData f = new fetchAppIdentifyData();
 					String getstr = f.getApplyMessage(srcIP, srcPort, dstIP, dstPort);
 					if(getstr==null) {
 						return false;
@@ -345,12 +323,6 @@ public class EapolFrame {
 							return true;
 						}
 					}
-				} catch (redisConnectFailedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					return false;
-				}
-				
 			}
 			//不是octet-stream，不是视频流量
 		}
@@ -370,28 +342,17 @@ public class EapolFrame {
 		for(int i=0;i<emsg.length()-need1.length();i++) {
 			if(emsg.substring(i, i+need1.length()).compareTo(need1)==0) {
 				String []ua = emsg.substring(i+need1.length()).split("\r\n");
-				try {
-					fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+					fetchAppIdentifyData f = new fetchAppIdentifyData();
 					f.writeFlowStatus(srcIP, srcPort, dstIP, dstPort, "dpiUserAgent", ua[0]);
-				} catch (redisConnectFailedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 				return ua[0];
 			}
 		}
 		for(int i=0;i<emsg.length()-need2.length();i++) {
 			if(emsg.substring(i, i+need2.length()).compareTo(need2)==0) {
 				String []spl = emsg.split("\r\n");
-				try {
-					fetchAppIdentifyData f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);
+					fetchAppIdentifyData f = new fetchAppIdentifyData();
 					f.writeFlowStatus(srcIP, srcPort, dstIP, dstPort, "dpiHost", spl[0]);
 					return f.getIdByHost(spl[0]);
-				} catch (redisConnectFailedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					return null;
-				}
 			}
 		}
 		return null;

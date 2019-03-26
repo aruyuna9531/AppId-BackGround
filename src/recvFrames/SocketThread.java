@@ -65,7 +65,7 @@ public class SocketThread implements Runnable{
 	public void run() {
 		System.out.println("检测到新的连接");
 		try {
-			f = new fetchAppIdentifyData(Listener.redisserver_host, Listener.redisserver_port, Listener.redisserver_pass);	//从redis获取活动节点
+			f = new fetchAppIdentifyData();	//从redis获取活动节点
 			String[] sp = f.getOneCloudServerAddress().split(":");	//随机获得的活动节点
 			//sout = new Socket(sp[0], Integer.parseInt(sp[1]));	//与这个服务器建立连接
 			//System.out.println("成功连接到云服务器："+sp[0]+":"+sp[1]+"，发包准备就绪");
@@ -115,7 +115,10 @@ public class SocketThread implements Runnable{
 					//以太网MTU限制，IP头+TCP头+数据段最大是1500B,再加数字链路层头就是1514B，超过这个数字的都是非主流以太网包
 					throw new PacketTooLongException(catchLen);
 				}
-
+				if(pktStr[12]!=0x08 || pktStr[13]!=0x00) {
+					//不是IP数据报，排除。一般是0x0006硬件地址包
+					continue;
+				}
 				//打印包的信息（包括帧长度，MAC流向，IP流向，数据段内容。调试用。）
 				EapolFrame fr;
 				try {
@@ -144,8 +147,6 @@ public class SocketThread implements Runnable{
 					// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		} catch (redisConnectFailedException e) {
-			e.printStackTrace();
 		} catch(Exception e) {
 			System.err.println("未知错误（详细错误类型见下方，有必要的话在packet_analysis方法内解开f.printFrame()的注释参考调试）");
 			e.printStackTrace();

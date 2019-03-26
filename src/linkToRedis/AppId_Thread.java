@@ -39,8 +39,7 @@ public class AppId_Thread implements Runnable{
 	}
 	
 	public void run() {
-		try {
-			fetchAppIdentifyData IdCache = new fetchAppIdentifyData(redis_host, redis_port, password);
+			fetchAppIdentifyData IdCache = new fetchAppIdentifyData();
 			HashMap<String, String> map; 
 			while(true) {
 				//进程每1秒动1次
@@ -67,10 +66,5 @@ public class AppId_Thread implements Runnable{
 				 */
 				
 			}
-		}catch(redisConnectFailedException e) {
-			e.printStackTrace();
-		}finally {
-			// Do nothing 线程终止
-		}
 	}
 }
