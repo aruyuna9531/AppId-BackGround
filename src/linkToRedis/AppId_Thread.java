@@ -3,6 +3,7 @@ package linkToRedis;
 import java.util.HashMap;
 
 import exceptions.redisConnectFailedException;
+import general.commonFunctions;
 
 /**
  * AppId_Thread
@@ -49,7 +50,7 @@ public class AppId_Thread implements Runnable{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				map = IdCache.getResultFromCloud();
+				//map = IdCache.getResultFromCloud();
 				//输出从redis读取的内容（测试）
 				/*
 				System.out.println("当前识别集合:[");
@@ -58,6 +59,10 @@ public class AppId_Thread implements Runnable{
 				}
 				System.out.println("]");
 				*/
+				IdCache.writeSomething("realtimeBytes", String.valueOf(commonFunctions.realtimeBytes));
+				commonFunctions.dateLog();
+				System.out.println("实时数据流量规模："+commonFunctions.realtimeBytes+"字节");
+				commonFunctions.realtimeBytes = 0;
 				// TODO 
 				/**
 				 * 每1秒将会从redis读取1次数据（需要防止Key过多造成读取缓慢问题，这里应该用epoll方式，如果找到java实现epoll的方法，再改）

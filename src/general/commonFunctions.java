@@ -4,6 +4,9 @@
 
 package general;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import exceptions.WrongParameterException;
 import exceptions.invalidNumberException;
 import exceptions.redisConnectFailedException;
@@ -14,6 +17,7 @@ import recvFrames.Listener;
 public class commonFunctions {
 	private static long packCount = 0;
 	private static fetchAppIdentifyData a= new fetchAppIdentifyData();
+	public static long realtimeBytes = 0;
 	public static int byteConvert(byte b) {
 		return b>=0?b:(256+b);
 	}
@@ -125,10 +129,17 @@ public class commonFunctions {
 	public static void mainFunc(EapolFrame f) throws redisConnectFailedException {
 		//下一行是视频流量检测测试
 		++packCount;
-		if(f.videoFrameCharacter()) System.out.println("检测到视频流量：");
+		if(f.videoFrameCharacter()) {
+			dateLog();
+			System.out.println("检测到视频流量：");
+		}
 		//移动应用识别测试（这里从redis缓存里拿数据）
 		String dua = a.getFlowStatus(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), "dpiUserAgent");
-		if(dua!=null)System.out.println("数据包编号"+packCount+"，当前流量指向的终端信息："+dua);
+		String dho = a.getFlowStatus(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), "dpiHost");
+		if(dua!=null) {
+			dateLog();
+			System.out.println("数据包编号"+packCount+"，当前流量指向的终端信息："+dua+"，host:"+dho);
+		}
 		
 		//server hello
 		int ptr = 0;
@@ -145,6 +156,7 @@ public class commonFunctions {
 					for(int i=0;i<b.length-ptr-5;i++)scert[i]=b[i+ptr+5];
 					
 					a.writeCAcert(f.getSrcIP(), f.getSrcPort(), f.getDstIP(), f.getDstPort(), scert);
+					dateLog();
 					System.out.println("IP组："+f.getDstIP()+":"+f.getDstPort()+":"+ f.getSrcIP()+":"+f.getSrcPort()+"注册了CA证书");
 				} catch (invalidNumberException e) {
 					// TODO Auto-generated catch block
@@ -160,6 +172,13 @@ public class commonFunctions {
 				e.printStackTrace();
 			}
 		}
+	}
+	/**
+	 * 打印时间（日志）
+	 */
+	public static void dateLog() {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		System.out.print(df.format(new Date())+" ");
 	}
 }
 

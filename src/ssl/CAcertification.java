@@ -105,10 +105,12 @@ public class CAcertification {
 			int sslen = commonFunctions.byteConvert(certificate[start+filled+1]);
 			if(commonFunctions.byteConvert(certificate[start+filled+8])==10) {
 				//organizationName
+				commonFunctions.dateLog();
 				System.out.println("CA证书持有单位："+new String(commonFunctions.pickbytes(certificate, start+filled+8+3, start+filled+8+3+commonFunctions.byteConvert(certificate[start+filled+10]))));
 			}
 			else if(commonFunctions.byteConvert(certificate[start+filled+8])==3) {
 				//commonName
+				commonFunctions.dateLog();
 				System.out.println("CA证书域名："+new String(commonFunctions.pickbytes(certificate, start+filled+8+3, start+filled+8+3+commonFunctions.byteConvert(certificate[start+filled+10]))));
 			}
 			filled += 2+sslen;

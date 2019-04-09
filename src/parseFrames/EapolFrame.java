@@ -44,7 +44,7 @@ public class EapolFrame {
 		IPHeadLength = (commonFunctions.byteConvert(pack[14])%16) << 2;
 		Protocol = pack[14+9];
 		TCPHeadLength = commonFunctions.byteConvert(pack[46]) >> 2; 
-		
+		commonFunctions.realtimeBytes += packetLength;
 		byte Flag = pack[47];
 		if((Flag & 0x10) != 0)ACK = true;
 		if((Flag & 0x8) != 0)PSH = true;
@@ -151,6 +151,7 @@ public class EapolFrame {
 	 */
 	public void printFrame() {
 		try {
+			commonFunctions.dateLog();
 			System.out.println("帧长度："+packetLength+"（IP头："+IPHeadLength+"，TCP头："+TCPHeadLength+"）"+"\n");
 			System.out.println("MAC流向："+ mac_StringVer(srcMac) + "->" + mac_StringVer(dstMac)+"\n");
 			System.out.println("IP流向："+
@@ -274,6 +275,7 @@ public class EapolFrame {
 	 */
 	public boolean videoFrameCharacter() {
 		if(eapolMessage==null)return false;
+		fetchAppIdentifyData f = new fetchAppIdentifyData();
 		String emsg = new String(eapolMessage);
 		String s = "HTTP/1.1 206 Partial Content";
 		String t = "Content-Type: ";
@@ -294,12 +296,18 @@ public class EapolFrame {
 			if(emsg.substring(ptrpos, ptrpos+5).compareTo("video")==0) {
 				//Content-Type是video，可以确定为视频流
 				videoStreamVerified();
+				//此时该帧的目标mac地址为终端mac地址，更新信息
+				try {
+					f.writeVideoStreamByMac(this.mac_StringVer(dstMac));
+				} catch (WrongParameterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				return true;
 			}
 			//不是video，查找octet-stream
 			if(emsg.substring(ptrpos, ptrpos+"application/octet-stream".length()).compareTo("application/octet-stream")==0) {
 				//是octet-stream，需要返回客户端的GET请求分析
-					fetchAppIdentifyData f = new fetchAppIdentifyData();
 					String getstr = f.getApplyMessage(srcIP, srcPort, dstIP, dstPort);
 					if(getstr==null) {
 						return false;
@@ -320,6 +328,12 @@ public class EapolFrame {
 						//dtypesilit的最后一项是后缀名，比对后缀库
 						if(f.videoTypeVerify(dtypesplit[dtypesplit.length-1])) {
 							videoStreamVerified();
+							try {
+								f.writeVideoStreamByMac(this.mac_StringVer(dstMac));
+							} catch (WrongParameterException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 							return true;
 						}
 					}
@@ -344,6 +358,12 @@ public class EapolFrame {
 				String []ua = emsg.substring(i+need1.length()).split("\r\n");
 					fetchAppIdentifyData f = new fetchAppIdentifyData();
 					f.writeFlowStatus(srcIP, srcPort, dstIP, dstPort, "dpiUserAgent", ua[0]);
+					try {
+						if(!ua[0].substring(0, 6).equals("Dalvik"))f.writeAppId(this.mac_StringVer(srcMac), ua[0]);
+					} catch (WrongParameterException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				return ua[0];
 			}
 		}
@@ -371,6 +391,9 @@ public class EapolFrame {
 		if(srcPort<1024)/*downStreaming*/return -eapolMessage.length;
 		else /*upStreaming*/return eapolMessage.length;
 	}
+	
+	
+	/*以下getter和setter*/
 	public int getSrcIP() {
 		// TODO Auto-generated method stub
 		return srcIP;

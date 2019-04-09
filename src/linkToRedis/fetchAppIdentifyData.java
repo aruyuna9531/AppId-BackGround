@@ -1,5 +1,7 @@
 package linkToRedis;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -81,6 +83,42 @@ public class fetchAppIdentifyData {
 //		}
 //	}
 	
+	public void writeSomething(String key, String value) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
+		jedis.set(key, value);
+		if(jedis!=null){
+			JedisPoolClient.returnResource(jedis);jedis=null;
+		}
+	}
+	
+	/**
+	 * 写mac被检测出视频流
+	 * @param mac
+	 */
+	public void writeVideoStreamByMac(String mac) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		jedis.hset("AppId:"+mac, "videoStream", "yes");
+		jedis.hset("AppId:"+mac, "lastModified", df.format(new Date()));
+		if(jedis!=null){
+			JedisPoolClient.returnResource(jedis);jedis=null;
+		}
+	}
+	
+	/**
+	 * 写mac被识别的App
+	 * @param mac
+	 */
+	public void writeAppId(String mac, String app) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		jedis.hset("AppId:"+mac, "usingApp", app);
+		jedis.hset("AppId:"+mac, "lastModified", df.format(new Date()));
+		if(jedis!=null){
+			JedisPoolClient.returnResource(jedis);jedis=null;
+		}
+	}
+	
 	/**
 	 * 连接到应用识别云后台获取数据
 	 * @return 包含Mac：App的Map
@@ -155,6 +193,39 @@ public class fetchAppIdentifyData {
 						JedisPoolClient.returnResource(jedis);jedis=null;}
 		return true;
 	}
+	/**
+	 * 写入app信息
+	 * @param mac 终端的MAC地址
+	 * @param uaMessage DPI获得的User-agent信息（的关键部分）
+	 * @return
+	 */
+	public boolean writeAPPStatus(String mac, String uaMessage) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
+		//TODO: APP实时信息录入
+		String getDPIkeyword = jedis.hget("dpi-keywords", uaMessage);
+		jedis.hset("mac-"+mac, "appKeyword", getDPIkeyword);
+		jedis.expire("mac-"+mac, expire);
+		
+		if(jedis!=null){
+			JedisPoolClient.returnResource(jedis);jedis=null;
+		}
+		return true;
+	}
+	
+	/**
+	 * 读取识别的APP信息
+	 * @param mac 终端Mac地址
+	 * @return APP信息
+	 */
+	public String getAPPStatus(String mac) {
+		if(jedis==null)jedis = JedisPoolClient.getJedis();
+		String s = jedis.hget("mac-"+mac, "appKeyword");
+		if(jedis!=null){
+			JedisPoolClient.returnResource(jedis);jedis=null;
+		}
+		return s;
+	}
+	
 	/**
 	 * 写入数据流的请求信息
 	 * @param sip 源ip
@@ -545,7 +616,6 @@ public class fetchAppIdentifyData {
 					writeFlowStatus(sip, sport, dip, dport, "CertMessage", caPart);
 					//上面这个函数有jedis归还链接的操作，导致jedis=null，需要重新从连接池借一个jedis连接
 					if(jedis==null)jedis = JedisPoolClient.getJedis();
-					if(jedis!=null)System.out.println("test-pt4");
 					jedis.hincrBy("flow:"+sip+":"+sport+":"+dip+":"+dport, "CertWritten", caPart.length);
 					if(jedis!=null){
 						JedisPoolClient.returnResource(jedis);
